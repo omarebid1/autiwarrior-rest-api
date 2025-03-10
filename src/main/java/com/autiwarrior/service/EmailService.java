@@ -41,7 +41,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String to, String token) {
-        String subject = "Password Reset Request for Autiwarrior - Action Required";
+        String subject = "Password Reset Request for Autiwarrior";
 
         String body = "<html>" +
                 "<head>" +

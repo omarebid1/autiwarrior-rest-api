@@ -121,13 +121,19 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
-        String token = request.getToken();
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        // Manually check if newPassword and confirmPassword match
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Passwords do not match.");
+        }
 
+        // Validate token
+        String token = request.getToken();
         if (!jwtUtil.validateToken(token)) {
             return ResponseEntity.badRequest().body("Invalid or expired token.");
         }
 
+        // Extract email from token and find user
         String email = jwtUtil.extractEmail(token);
         Optional<User> userOptional = userRepository.findByEmail(email);
 
@@ -135,6 +141,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("User not found.");
         }
 
+        // Update user's password
         User user = userOptional.get();
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);

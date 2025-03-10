@@ -80,7 +80,7 @@ public class AuthController {
         // Validate doctorLicense if role is DOCTOR
         if (request.getRole() == User.Role.DOCTOR) {
             if (request.getDoctorLicense() == null || request.getDoctorLicense().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("In case you are a Doctor your license is required!");
+                return ResponseEntity.badRequest().body("In case of Doctors, The license is required!");
             }
         }
 
@@ -100,9 +100,9 @@ public class AuthController {
         userRepository.save(user);
 
         // Log successful registration
-        System.out.printf("%s registered successfully!\n", user.getUsername());
+        System.out.printf("%s registered successfully!\n", user.getEmail());
 
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok(String.format("New user registered successfully!\n%s", user.getEmail()));
     }
 
     @PostMapping("/forgot-password")

@@ -67,11 +67,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest request) {
-        // Check if username already exists
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username already exists");
-        }
-
         // Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email already exists");
@@ -80,13 +75,14 @@ public class AuthController {
         // Validate doctorLicense if role is DOCTOR
         if (request.getRole() == User.Role.DOCTOR) {
             if (request.getDoctorLicense() == null || request.getDoctorLicense().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("In case of Doctors, The license is required!");
+                return ResponseEntity.badRequest().body("In case of Doctors, the license is required!");
             }
         }
 
         // Create a new user
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());

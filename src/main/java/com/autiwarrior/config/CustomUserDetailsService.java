@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -19,11 +20,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
-        user.orElseThrow(() -> new UsernameNotFoundException(String.format("User %s not found", username)));
-        log.info("User {} is authenticated", username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // Find user by email (now used as the username)
+        Optional<User> user = userRepository.findByEmail(email);
+        user.orElseThrow(() -> new UsernameNotFoundException(String.format("User with email %s not found", email)));
+        log.info("User with email {} is authenticated", email);
         return new CustomUserDetails(user.get());
     }
 }
-

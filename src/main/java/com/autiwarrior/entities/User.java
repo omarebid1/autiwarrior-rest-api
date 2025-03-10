@@ -8,10 +8,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+
+@Data
 @Entity
 @Table(name = "users")
-@Data
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -34,6 +36,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Column
+    private String doctorLicense; // New field for doctor's license
 
     @CreationTimestamp
     private LocalDateTime createdAt;

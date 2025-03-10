@@ -27,9 +27,9 @@ public class JwtUtil {
     }
 
     // Method to generate a JWT token for login
-    public String generateToken(String username, String role) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .addClaims(Map.of("role", role))
                 .setIssuedAt(new Date())
                 .setExpiration(getExpirationDate(60))   //  Expires in 1 hour

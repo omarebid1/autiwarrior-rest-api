@@ -1,11 +1,13 @@
 package com.autiwarrior.dto;
 
 import com.autiwarrior.entities.User;
+import com.autiwarrior.validation.DoctorValidationGroup;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class RegistrationRequest {
+
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
@@ -20,4 +22,7 @@ public class RegistrationRequest {
 
     @NotNull(message = "Role is required")
     private User.Role role;
+
+    @NotBlank(message = "Doctor license is required", groups = DoctorValidationGroup.class)
+    private String doctorLicense;
 }

@@ -22,5 +22,4 @@ public class AutiwarriorApplication {
     public static void main(String[] args) {
         SpringApplication.run(AutiwarriorApplication.class, args);
     }
-
 }

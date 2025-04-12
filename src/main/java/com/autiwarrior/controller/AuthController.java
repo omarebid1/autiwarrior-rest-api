@@ -15,6 +15,12 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import org.springframework.security.authentication.AuthenticationManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -24,6 +30,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+    private final AuthenticationManager authenticationManager;
 
     @GetMapping("/login")
     public ResponseEntity<String> login() {
@@ -41,13 +48,23 @@ public class AuthController {
 
         User user = userOptional.get();
 
+        // Check if the user signed up via Google OAuth2
+        if ("google".equals(user.getProvider())) {
+            return ResponseEntity.badRequest().body("Please sign in using Google.");
+        }
+
         // Validate password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body("Incorrect password.");
         }
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
+        // Generate JWT token with custom claims
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole().name());
+        claims.put("provider", user.getProvider());
+        claims.put("providerId", user.getProviderId());
+
+        String token = jwtUtil.generateToken(user.getEmail(), claims);
 
         // Log successful login
         LocalTime currentTime = LocalTime.now();
@@ -58,6 +75,11 @@ public class AuthController {
 
         // Return the token in the response
         return ResponseEntity.ok(token);
+    }
+
+    @GetMapping("/success")
+    public ResponseEntity<String> success(@RequestParam String token) {
+        return ResponseEntity.ok("Login successful with Google! Token: " + token);
     }
 
     @GetMapping("/register")
@@ -86,6 +108,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
+        user.setProvider("local"); // Set provider as "local" for email/password users
 
         // Set doctorLicense if role is DOCTOR
         if (request.getRole() == User.Role.DOCTOR) {
@@ -107,6 +130,13 @@ public class AuthController {
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("User with this email does not exist.");
+        }
+
+        User user = userOptional.get();
+
+        // Check if the user signed up via Google OAuth2
+        if ("google".equals(user.getProvider())) {
+            return ResponseEntity.badRequest().body("Please use Google to sign in.");
         }
 
         String token = jwtUtil.generateResetToken(email); // Generate JWT token
@@ -137,11 +167,21 @@ public class AuthController {
             return ResponseEntity.badRequest().body("User not found.");
         }
 
-        // Update user's password
         User user = userOptional.get();
+
+        // Check if the user signed up via Google OAuth2
+        if ("google".equals(user.getProvider())) {
+            return ResponseEntity.badRequest().body("Please use Google to sign in.");
+        }
+
+        // Update user's password
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
         return ResponseEntity.ok("Password reset successful.");
+    }
+
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
     }
 }

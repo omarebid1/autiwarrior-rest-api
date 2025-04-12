@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,12 +20,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService customUserDetailsService;
-    private final JwtUtil jwtUtil;
 
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtUtil jwtUtil) {
-        this.customUserDetailsService = customUserDetailsService;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+    private final OAuth2SuccessHandler oauth2SuccessHandler; // Add this
+
+    public SecurityConfig(JwtUtil jwtUtil, UserDetailsService userDetailsService, OAuth2SuccessHandler oauth2SuccessHandler) {
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+        this.oauth2SuccessHandler = oauth2SuccessHandler; // Initialize OAuth2SuccessHandler
     }
 
     @Bean
@@ -33,13 +37,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/**").permitAll() // Allow access to login/register
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**").permitAll() // Allow access to login/register
                         .requestMatchers("/api/doctors/**").authenticated() // Protect doctor endpoints
                         .anyRequest().authenticated() // Protect all other endpoints
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class) // Add JWT filter
-                .formLogin(AbstractHttpConfigurer::disable) // Disable form login
-                .logout(AbstractHttpConfigurer::disable); // Disable logout
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oauth2SuccessHandler) // Use custom OAuth2 success handler
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class); // Add JWT filter
 
         return http.build();
     }
@@ -49,7 +54,7 @@ public class SecurityConfig {
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder
-                .userDetailsService(customUserDetailsService)
+                .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }

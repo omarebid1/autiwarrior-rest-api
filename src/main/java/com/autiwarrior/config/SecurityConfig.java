@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**").permitAll() // Allow access to login/register
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**", "/api/messages/**", "/ws-chat/**").permitAll() // Allow access to log in/register
                         .requestMatchers("/api/doctors/**").authenticated() // Protect doctor endpoints
                         .anyRequest().authenticated() // Protect all other endpoints
                 )

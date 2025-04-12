@@ -6,6 +6,7 @@ import com.autiwarrior.dao.*;
 import com.autiwarrior.filters.JwtUtil;
 import com.autiwarrior.service.EmailService;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,9 +28,12 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final MotherRepository motherRepository;
+    private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+    @Getter
     private final AuthenticationManager authenticationManager;
 
     @GetMapping("/login")
@@ -108,7 +112,7 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        user.setProvider("local"); // Set provider as "local" for email/password users
+        user.setProvider("local");
 
         // Set doctorLicense if role is DOCTOR
         if (request.getRole() == User.Role.DOCTOR) {
@@ -118,11 +122,30 @@ public class AuthController {
         // Save the user
         userRepository.save(user);
 
+        // Save role-specific entity
+        if (user.getRole() == User.Role.MOTHER) {
+            Mother mother = new Mother();
+            mother.setFirstName(user.getFirstName());
+            mother.setLastName(user.getLastName());
+            mother.setEmail(user.getEmail());
+            mother.setUser(user);
+            motherRepository.save(mother);
+        } else if (user.getRole() == User.Role.DOCTOR) {
+            Doctor doctor = new Doctor();
+            doctor.setFirstName(user.getFirstName());
+            doctor.setLastName(user.getLastName());
+            doctor.setEmail(user.getEmail());
+            doctor.setDoctorLicense(user.getDoctorLicense());
+            doctor.setUser(user);
+            doctorRepository.save(doctor);
+        }
+
         // Log successful registration
         System.out.printf("%s registered successfully!\n", user.getEmail());
 
         return ResponseEntity.ok(String.format("New user registered successfully!\n%s", user.getEmail()));
     }
+
 
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {
@@ -181,7 +204,4 @@ public class AuthController {
         return ResponseEntity.ok("Password reset successful.");
     }
 
-    public AuthenticationManager getAuthenticationManager() {
-        return authenticationManager;
-    }
 }

@@ -141,7 +141,7 @@ public class AuthController {
         }
 
         // Log successful registration
-        System.out.printf("%s registered successfully!\n", user.getEmail());
+        System.out.printf("%s registered as %s successfully!\n", user.getRole(), user.getEmail());
 
         return ResponseEntity.ok(String.format("New %s registered successfully!\n%s", user.getRole(), user.getEmail()));
     }

@@ -74,7 +74,8 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         // Return null for OAuth2 users (Google users don't have a password)
-        return this.getProvider().equals("local") ? this.getPassword() : null;
+        return "local".equals(this.provider) ? this.password : null;
+        //return this.getProvider().equals("local") ? this.getPassword() : null;
     }
 
     @Override

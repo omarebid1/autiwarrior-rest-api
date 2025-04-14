@@ -65,6 +65,9 @@ public class AuthController {
         return ResponseEntity.ok("Register endpoint reached");
     }
 
+
+    //todo security issue (user can't make himself admin)
+    //admin only created by admin
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest request) {
         // Check if email already exists

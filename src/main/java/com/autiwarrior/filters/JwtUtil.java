@@ -26,6 +26,9 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
+    //todo refresh token ==> for more security
+
+
     // Method to generate a JWT token for login
     public String generateToken(String email, String role) {
         return Jwts.builder()

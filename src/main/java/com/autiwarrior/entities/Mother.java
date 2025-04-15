@@ -13,17 +13,14 @@ public class Mother {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long motherId;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phoneNumber;
+    private LocalDate dateOfBirth;
+    private String address;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
-
-    @Column(nullable = false)
-    private String fullName;
-
-    private String phoneNumber;
-
-    private LocalDate dateOfBirth;
-
-    private String address;
 }

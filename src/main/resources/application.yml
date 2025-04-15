@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: autiwarrior  # Application name
+
+  datasource:
+    url: ${DB_URL}  # Database connection URL
+    username: ${DB_USERNAME}  # Database username
+    password: ${DB_PASSWORD}  # Database password
+
+  jpa:
+    hibernate:
+      ddl-auto: create  # Database schema auto-generation strategy
+    open-in-view: false  # Disable Open Session in View to improve performance
+    #show-sql: true
+
+  mail:
+    host: smtp-relay.brevo.com  # SMTP mail server
+    port: 587  # SMTP port
+    username: ${SMTP_USERNAME}  # SMTP username
+    password: ${SMTP_PASSWORD}  # SMTP password
+    properties:
+      mail.smtp.auth: true  # Enable SMTP authentication
+      mail.smtp.starttls.enable: true  # Enable STARTTLS security
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}  # Google OAuth client ID
+            client-secret: ${GOOGLE_CLIENT_SECRET}  # Google OAuth client secret
+            scope:
+              - email
+              - profile
+            redirect-uri: ${GOOGLE_URI}
+
+  profiles:
+    active: dev  # Active profile (e.g., dev, prod)
+
+
+springdoc:
+  api-docs:
+    enabled: true  # Enable API documentation
+  swagger-ui:
+    enabled: true  # Enable Swagger UI
+    path: ${UI_PATH}  # Swagger UI path
+    url: ${UI_URL}  # Swagger UI URL
+
+brevo:
+  api:
+    key: ${SMTP_API_KEY}  # Brevo API key
+  sender:
+    email: ${SMTP_SENDER_MAIL}  # Sender email for Brevo
+    name: Autiwarrior Team  # Sender name
+
+jwt:
+  secret: ${MY_SECRET_KEY}  # JWT secret key
+
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        security: DEBUG
+#        web: DEBUG

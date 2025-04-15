@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "User API",
+                title = "Autiwarrior API",
                 version = "1.0",
                 contact = @Contact(name = "Omar Ebid", email = "ebidomar79@gmail.com"),
                 license = @License(name = "MU License"),

@@ -26,15 +26,15 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Method to generate a JWT token with custom claims
-    public String generateToken(String email, Map<String, Object> claims) {
+    // Method to generate a JWT token for login
+    public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
-                .addClaims(claims) // Add custom claims
+                .addClaims(Map.of("role", role))
                 .setIssuedAt(new Date())
-                .setExpiration(getExpirationDate(60)) // Expires in 1 hour
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                .setExpiration(getExpirationDate(60))   //  Expires in 1 hour
+                .signWith(key, SignatureAlgorithm.HS256)    //  Sign the token
+                .compact(); //  Compact it into a string
     }
 
     // Method to generate a reset token
@@ -56,7 +56,7 @@ public class JwtUtil {
                 .getBody();
     }
 
-    // Extract the username (email) from the token
+    // Extract the username from the token
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }
@@ -66,33 +66,14 @@ public class JwtUtil {
         return extractUsername(token);
     }
 
-    // Extract the role from the token
-    public String extractRole(String token) {
-        return extractClaims(token).get("role", String.class);
-    }
-
-    // Extract the provider from the token
-    public String extractProvider(String token) {
-        return extractClaims(token).get("provider", String.class);
-    }
-
-    // Extract the provider ID from the token
-    public String extractProviderId(String token) {
-        return extractClaims(token).get("providerId", String.class);
-    }
-
     // Method to validate the token
     public boolean validateToken(String token) {
         try {
-            return !isTokenExpired(token);
+            extractClaims(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
-    }
-
-    // Check if the token is expired
-    public boolean isTokenExpired(String token) {
-        return extractClaims(token).getExpiration().before(new Date());
     }
 
     // Calculate token expiration time
@@ -102,7 +83,5 @@ public class JwtUtil {
                 .atZone(ZoneId.systemDefault())
                 .toInstant());
     }
-
-
 }
 

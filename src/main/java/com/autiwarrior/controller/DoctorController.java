@@ -1,5 +1,6 @@
 package com.autiwarrior.controller;
 
+import com.autiwarrior.dao.DoctorRepository;
 import com.autiwarrior.entities.Doctor;
 import com.autiwarrior.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorService doctorService;
-
+@Autowired
+private Doctor doctor;
     // Create a new doctor
 
     @PostMapping
@@ -52,4 +54,11 @@ public class DoctorController {
         doctorService.deleteDoctor(doctorId);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/getDoctorData")
+public List<String> getDoctorData(Doctor doctor) {
+        System.out.println("getDoctorData");
+
+        return doctorService.getDoctorData(doctor);
+}
+
 }

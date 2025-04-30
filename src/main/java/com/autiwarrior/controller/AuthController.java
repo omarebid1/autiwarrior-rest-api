@@ -68,7 +68,7 @@ public class AuthController {
         claims.put("provider", user.getProvider());
         claims.put("providerId", user.getProviderId());
 
-        String token = jwtUtil.generateToken(user.getEmail(), claims);
+        String token = jwtUtil.generateToken(user.getEmail(), claims.toString());
 
         // Log successful login
         LocalTime currentTime = LocalTime.now();

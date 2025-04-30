@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         claims.put("provider", user.getProvider());
         claims.put("providerId", user.getProviderId());
 
-        String token = jwtUtil.generateToken(user.getEmail(), claims);
+        String token = jwtUtil.generateToken(user.getEmail(), claims.toString());
 
         // Add the token to the response
         response.addHeader("Authorization", "Bearer " + token);

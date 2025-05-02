@@ -5,6 +5,7 @@ import com.autiwarrior.entities.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ public class DoctorService {
 
     @Autowired
     private DoctorRepository doctorRepository;
+    private  List<String> doctorData = new ArrayList<>();
+
 
     // Create a new doctor
     public Doctor createDoctor(Doctor doctor) {
@@ -40,13 +43,20 @@ public class DoctorService {
         doctorRepository.deleteById(doctorId);
     }
 
-    // what paulo ask
-    public List<String> getDoctorData(Doctor doctor) {
-        List<String> doctorData = new ArrayList<>();
+
+    public List<String> SaveDoctorData(Doctor doctor) {
+        doctorData.add(doctor.getDoctorLicense());
         doctorData.add(doctor.getAcademicDegree());
         doctorData.add(doctor.getSpecialization());
         doctorData.add(String.valueOf(doctor.getYearsOfExperience()));
         doctorData.add(doctor.getCertificates());
+        DoctorRepository doctorRepository = this.doctorRepository;
+        doctorRepository.save(doctor);
+        return doctorData;
+    }
+
+    // what paulo ask
+    public List<String> getDoctorData(Doctor doctor) {
         return doctorData;
     }
 

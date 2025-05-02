@@ -56,17 +56,15 @@ public class DoctorController {
     }
 
     @GetMapping("/getDoctorData")
-    public List<String> getDoctorData(Doctor doctor) {
+    public List<String> getDoctorData() {
         System.out.println("getDoctorData");
-
-
         return doctorService.getDoctorData(doctor);
     }
 
     // ✅ Post endpoint to get doctor data as a list of strings
     @PostMapping("/complete-profile")
     public ResponseEntity<List<String>> completeDoctorData(@RequestBody Doctor doctor) {
-        List<String> doctorData = doctorService.getDoctorData(doctor);
+        List<String> doctorData = doctorService.SaveDoctorData(doctor);
         return ResponseEntity.ok(doctorData);
     }
 

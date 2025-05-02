@@ -31,6 +31,6 @@ public class Doctor {
 
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = true)
     private User user;
 }

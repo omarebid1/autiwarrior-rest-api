@@ -1,11 +1,17 @@
-FROM openjdk:19-jdk
+# Use a slimmer, stable Java 19 base image
+FROM eclipse-temurin:19-jdk-alpine
 
+# Set the working directory
 WORKDIR /app
 
-COPY target/autiwarrior-0.0.1-SNAPSHOT.jar /app/autiwarrior.jar
+# Copy the JAR file
+COPY target/autiwarrior-0.0.1-SNAPSHOT.jar autiwarrior.jar
 
-LABEL authors="Omar Ebid"
+# Label the maintainer (optional but good practice)
+LABEL maintainer="Omar Ebid"
 
+# Expose the port used by Spring Boot
 EXPOSE 8080
 
-CMD ["java" , "-jar" , "autiwarrior.jar"]
+# Run the Spring Boot app
+ENTRYPOINT ["java", "-jar", "autiwarrior.jar"]

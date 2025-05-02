@@ -16,8 +16,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorService doctorService;
-@Autowired
-private Doctor doctor;
+    @Autowired
+    private Doctor doctor;
     // Create a new doctor
 
     @PostMapping
@@ -54,11 +54,20 @@ private Doctor doctor;
         doctorService.deleteDoctor(doctorId);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/getDoctorData")
-public List<String> getDoctorData(Doctor doctor) {
+    public List<String> getDoctorData(Doctor doctor) {
         System.out.println("getDoctorData");
 
+
         return doctorService.getDoctorData(doctor);
-}
+    }
+
+    // ✅ Post endpoint to get doctor data as a list of strings
+    @PostMapping("/complete-profile")
+    public ResponseEntity<List<String>> completeDoctorData(@RequestBody Doctor doctor) {
+        List<String> doctorData = doctorService.getDoctorData(doctor);
+        return ResponseEntity.ok(doctorData);
+    }
 
 }

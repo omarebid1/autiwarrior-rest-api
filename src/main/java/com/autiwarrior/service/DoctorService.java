@@ -39,7 +39,8 @@ public class DoctorService {
     public void deleteDoctor(Long doctorId) {
         doctorRepository.deleteById(doctorId);
     }
-// what paulo ask
+
+    // what paulo ask
     public List<String> getDoctorData(Doctor doctor) {
         List<String> doctorData = new ArrayList<>();
         doctorData.add(doctor.getAcademicDegree());
@@ -47,8 +48,6 @@ public class DoctorService {
         doctorData.add(String.valueOf(doctor.getYearsOfExperience()));
         doctorData.add(doctor.getCertificates());
         return doctorData;
-
-
     }
 
 }

@@ -16,8 +16,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorService doctorService;
-    @Autowired
-    private Doctor doctor;
+    //@Autowired
+  //  private Doctor doctor;
     // Create a new doctor
 
     @PostMapping
@@ -28,7 +28,7 @@ public class DoctorController {
 
     // Get a doctor by ID
     @GetMapping("/{doctorId}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable Long doctorId) {
+    public ResponseEntity<Doctor> getDoctorById(@PathVariable Integer doctorId) {
         Optional<Doctor> doctor = doctorService.getDoctorById(doctorId);
         return doctor.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -42,7 +42,7 @@ public class DoctorController {
 
     // Update a doctor
     @PutMapping("/{doctorId}")
-    public ResponseEntity<Doctor> updateDoctor(@PathVariable Long doctorId, @RequestBody Doctor doctor) {
+    public ResponseEntity<Doctor> updateDoctor(@PathVariable Integer doctorId, @RequestBody Doctor doctor) {
         doctor.setDoctorId(doctorId);
         Doctor updatedDoctor = doctorService.updateDoctor(doctor);
         return ResponseEntity.ok(updatedDoctor);
@@ -50,22 +50,32 @@ public class DoctorController {
 
     // Delete a doctor by ID
     @DeleteMapping("/{doctorId}")
-    public ResponseEntity<Void> deleteDoctor(@PathVariable Long doctorId) {
+    public ResponseEntity<Void> deleteDoctor(@PathVariable Integer doctorId) {
         doctorService.deleteDoctor(doctorId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/getDoctorData")
-    public List<String> getDoctorData() {
-        System.out.println("getDoctorData");
-        return doctorService.getDoctorData(doctor);
+    public ResponseEntity<List<String>> getDoctorData(@RequestParam Integer id) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorById(id);
+        if (doctorOpt.isPresent()) {
+            return ResponseEntity.ok(doctorService.extractDoctorData(doctorOpt.get()));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 
     // ✅ Post endpoint to get doctor data as a list of strings
     @PostMapping("/complete-profile")
-    public ResponseEntity<List<String>> completeDoctorData(@RequestBody Doctor doctor) {
-        List<String> doctorData = doctorService.SaveDoctorData(doctor);
-        return ResponseEntity.ok(doctorData);
+    public ResponseEntity<String> completeDoctorData(@RequestBody Doctor doctor) {
+        if (doctor.getDoctorId() == null) {
+            throw new IllegalArgumentException("Doctor ID is required to update profile data.");
+        }
+        doctorService.SaveDoctorData(doctor);
+        return ResponseEntity.ok("Doctor profile updated successfully");
     }
+
+
 
 }

@@ -1,5 +1,6 @@
 package com.autiwarrior.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Integer userId;
 
     @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
@@ -60,7 +61,9 @@ public class User implements UserDetails {
 
     @Column() // Nullable for local users
     private String providerId; // Unique ID from Google
-
+    @JsonManagedReference
+    @OneToOne(mappedBy = "user")
+private Doctor doctor;
     public enum Role {
         DOCTOR, MOTHER
     }

@@ -117,7 +117,7 @@ public class AdminController {
         return userRepository.findById(id).map(user -> {
             switch (user.getRole()) {
                 case MOTHER -> motherRepository.deleteById(id);
-                case DOCTOR -> doctorRepository.deleteById(id);
+                case DOCTOR -> doctorRepository.deleteById(Math.toIntExact(id));
             }
             userRepository.deleteById(id);
             return ResponseEntity.noContent().build();

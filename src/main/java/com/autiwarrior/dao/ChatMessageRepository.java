@@ -12,6 +12,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             "(m.sender.id = :user1 AND m.receiver.id = :user2) OR " +
             "(m.sender.id = :user2 AND m.receiver.id = :user1) " +
             "ORDER BY m.timestamp ASC")
-    List<ChatMessage> findChatHistory(@Param("user1") Long user1, @Param("user2") Long user2);
+    List<ChatMessage> findChatHistory(@Param("user1") Integer user1, @Param("user2") Integer user2);
 
 }

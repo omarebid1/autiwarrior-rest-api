@@ -75,7 +75,23 @@ public class DoctorController {
         doctorService.SaveDoctorData(doctor);
         return ResponseEntity.ok("Doctor profile updated successfully");
     }
-
+    @PostMapping("/complete-profileL")
+    public ResponseEntity<String> completeDoctorDataL(@RequestBody Doctor doctor) {
+        if (doctor.getDoctorLicense()== null) {
+            throw new IllegalArgumentException("Doctor License is required to update profile data.");
+        }
+        doctorService.saveDoctorDataByLicense(doctor);
+        return ResponseEntity.ok("Doctor profile updated successfully");
+    }
+    @GetMapping("/getDoctorDataL")
+    public ResponseEntity<List<String>> getDoctorDataL(@RequestParam String License) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorByLicense(License);
+        if (doctorOpt.isPresent()) {
+            return ResponseEntity.ok(doctorService.extractDoctorData(doctorOpt.get()));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 
 }

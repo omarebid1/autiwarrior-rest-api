@@ -29,6 +29,10 @@ public class DoctorService {
     public Optional<Doctor> getDoctorById(Integer doctorId) {
         return doctorRepository.findById(doctorId);
     }
+    public Optional<Doctor> getDoctorByLicense(String doctorLicense) {
+
+        return doctorRepository.findAllByDoctorLicense(doctorLicense);
+    }
 
     // Get all doctors
     public List<Doctor> getAllDoctors() {
@@ -93,5 +97,20 @@ public class DoctorService {
         return doctorData;
     }
 
+    public void saveDoctorDataByLicense(Doctor doctor) {
+        if (doctor.getDoctorLicense() == null) {
+            throw new IllegalArgumentException("Doctor License is required to update profile data.");
+        }
+
+        Doctor existingDoctor = doctorRepository.findAllByDoctorLicense(doctor.getDoctorLicense())
+                .orElseThrow(() -> new RuntimeException("Doctor with license " + doctor.getDoctorLicense() + " not found"));
+
+        existingDoctor.setAcademicDegree(doctor.getAcademicDegree());
+        existingDoctor.setSpecialization(doctor.getSpecialization());
+        existingDoctor.setYearsOfExperience(doctor.getYearsOfExperience());
+        existingDoctor.setCertificates(doctor.getCertificates());
+
+        doctorRepository.save(existingDoctor);
+    }
 
 }

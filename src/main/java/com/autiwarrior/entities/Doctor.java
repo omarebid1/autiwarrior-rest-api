@@ -7,8 +7,7 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name = "doctors")
@@ -29,12 +28,12 @@ public class Doctor {
     private String doctorLicense;
     private LocalDate dateOfBirth;
     private String address;
-    private String academicDegree; // الدرجة العلمية (e.g., "دكتوراه في طب الأطفال والنوحد")
-    private Integer yearsOfExperience; // سنوات الخبرة (e.g., 10)
-    private String certificates; // List of certificates (e.g., ["شهادة أطفال", "شهادة توحد"])
+    private String academicDegree;
+    private Integer yearsOfExperience;
+    private String certificates;
 
     @JsonBackReference
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = true,insertable = false ,updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", insertable = false, updatable = false)
     private User user;
 }

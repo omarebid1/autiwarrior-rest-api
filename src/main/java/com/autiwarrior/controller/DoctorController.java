@@ -1,6 +1,5 @@
 package com.autiwarrior.controller;
 
-import com.autiwarrior.dao.DoctorRepository;
 import com.autiwarrior.dto.DoctorProfileDTO;
 import com.autiwarrior.entities.Doctor;
 import com.autiwarrior.service.DoctorService;
@@ -97,28 +96,4 @@ public class DoctorController {
         return ResponseEntity.ok("Doctor profile updated successfully");
     }
 
-    /**
-     * Endpoint to complete doctor profile data using doctor license.
-     */
-    /*@PostMapping("/complete-profileL")
-    public ResponseEntity<String> completeDoctorDataByLicense(@RequestBody Doctor doctor) {
-        if (doctor.getDoctorLicense() == null) {
-            throw new IllegalArgumentException("Doctor License is required to update profile data.");
-        }
-        doctorService.saveDoctorDataByLicense(doctor);
-        return ResponseEntity.ok("Doctor profile updated successfully");
-    }*/
-
-    /**
-     * Endpoint to retrieve doctor profile data using doctor license.
-     */
-    @GetMapping("/getDoctorDataL")
-    public ResponseEntity<List<String>> getDoctorDataByLicense(@RequestParam String License) {
-        Optional<Doctor> doctorOpt = doctorService.getDoctorByLicense(License);
-        if (doctorOpt.isPresent()) {
-            return ResponseEntity.ok(doctorService.extractDoctorData(doctorOpt.get()));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }

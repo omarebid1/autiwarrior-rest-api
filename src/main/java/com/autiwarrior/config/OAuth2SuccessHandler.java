@@ -14,7 +14,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+//@Component
+@Deprecated
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;

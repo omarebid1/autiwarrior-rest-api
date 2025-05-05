@@ -23,12 +23,12 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
-    private final OAuth2SuccessHandler oauth2SuccessHandler; // Add this
+    //private final OAuth2SuccessHandler oauth2SuccessHandler; // Add this
 
-    public SecurityConfig(JwtUtil jwtUtil, UserDetailsService userDetailsService, OAuth2SuccessHandler oauth2SuccessHandler) {
+    public SecurityConfig(JwtUtil jwtUtil, UserDetailsService userDetailsService/*, OAuth2SuccessHandler oauth2SuccessHandler*/) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
-        this.oauth2SuccessHandler = oauth2SuccessHandler; // Initialize OAuth2SuccessHandler
+        //this.oauth2SuccessHandler = oauth2SuccessHandler; // Initialize OAuth2SuccessHandler
     }
 
     @Bean
@@ -37,13 +37,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/doctors/**","/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**", "/api/messages/**", "/ws-chat/**").permitAll() // Allow access to log in/register
-                        .requestMatchers("/api/mothers/**").authenticated() // Protect doctor endpoints
+                        .requestMatchers("/api/doctors/**", "/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**", "/api/messages/**", "/ws-chat/**").permitAll() // Allow access to log in/register
+                        //.requestMatchers("/api/mothers/**").authenticated() // Protect doctor endpoints
                         .anyRequest().authenticated() // Protect all other endpoints
                 )
-                .oauth2Login(oauth2 -> oauth2
+                /*.oauth2Login(oauth2 -> oauth2
                         .successHandler(oauth2SuccessHandler) // Use custom OAuth2 success handler
-                )
+                )*/
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class); // Add JWT filter
 
         return http.build();

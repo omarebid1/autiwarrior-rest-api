@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #e0ecf7, #f5f7fa);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background-color: #2a5298;
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link,
+        .navbar-custom .navbar-text {
+            color: #fff;
+        }
+
+        .dashboard-container {
+            flex: 1;
+            padding: 50px 20px;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            font-weight: bold;
+            color: #1a3c74;
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+        }
+
+        .dashboard-card {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .dashboard-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #2a5298;
+        }
+
+        .dashboard-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+
+        .dashboard-card p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        a.card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        footer {
+            background-color: #2a5298;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <div class="ms-auto d-flex align-items-center">
+            <span class="navbar-text me-3">Welcome, Admin!</span>
+            <a th:href="@{/admin}" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Dashboard Content -->
+<div class="container dashboard-container">
+    <h2 class="dashboard-title">Control Panel</h2>
+
+    <div class="card-grid">
+
+        <a th:href="@{/pending-users}" class="card-link">
+            <div class="dashboard-card bg-warning bg-opacity-10">
+                <i class="fas fa-user-clock"></i>
+                <h4>Pending Users</h4>
+                <p>Review and approve new user registrations</p>
+            </div>
+        </a>
+
+        <a th:href="@{/admins}" class="card-link">
+            <div class="dashboard-card bg-primary bg-opacity-10">
+                <i class="fas fa-user-shield"></i>
+                <h4>Active Admins</h4>
+                <p>Manage administrator accounts</p>
+            </div>
+        </a>
+
+        <a th:href="@{/doctors}" class="card-link">
+            <div class="dashboard-card bg-info bg-opacity-10">
+                <i class="fas fa-user-md"></i>
+                <h4>Active Doctors</h4>
+                <p>View and update doctors' profiles</p>
+            </div>
+        </a>
+
+        <a th:href="@{/mothers}" class="card-link">
+            <div class="dashboard-card bg-success bg-opacity-10">
+                <i class="fas fa-female"></i>
+                <h4>Active Mothers</h4>
+                <p>Manage mothers registered on the platform</p>
+            </div>
+        </a>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <span>&copy; 2025 Autiwarrior. All rights reserved.</span>
+    </div>
+</footer>
+
+</body>
+</html>

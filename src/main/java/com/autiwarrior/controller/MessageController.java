@@ -2,6 +2,7 @@ package com.autiwarrior.controller;
 
 import com.autiwarrior.dao.ChatMessageRepository;
 import com.autiwarrior.dao.UserRepository;
+import com.autiwarrior.dto.ChatHistoryDto;
 import com.autiwarrior.dto.ChatMessageDto;
 import com.autiwarrior.entities.ChatMessage;
 import com.autiwarrior.entities.User;
@@ -68,5 +69,30 @@ public class MessageController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getAllMessagesForUser(@RequestParam String receiverEmail) {
+        Optional<User> userOpt = userRepo.findByEmail(receiverEmail);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid email");
+        }
+
+        Long userId = Long.valueOf(userOpt.get().getUserId());
+
+        // Fetch all messages where the user is sender or receiver
+        List<ChatMessage> messages = messageRepo.findChatMessagesInvolvingUser(userId);
+
+        // Map to simplified DTO
+        List<ChatHistoryDto> response = messages.stream()
+                .map(msg -> new ChatHistoryDto(
+                        msg.getSender().getEmail(),
+                        msg.getContent(),
+                        msg.getTimestamp()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }

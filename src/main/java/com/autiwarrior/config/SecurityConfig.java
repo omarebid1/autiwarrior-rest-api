@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Disable sessions
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/doctors/**", "/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**", "/api/messages/**", "/ws-chat/**", "/admin/**").permitAll() // Allow access to log in/register
+                        .requestMatchers("/api/doctors/**", "/api/mothers/**", "/api/auth/**", "/swagger-ui/**", "/v3/**", "/api/public/**", "/api/messages/**", "/ws-chat/**", "/admin/**").permitAll() // Allow access to log in/register
                         //.requestMatchers("/api/mothers/**").authenticated() // Protect doctor endpoints
                         .anyRequest().authenticated() // Protect all other endpoints
                 )
@@ -51,11 +51,14 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+
         AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
+
         authenticationManagerBuilder
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
+
         return authenticationManagerBuilder.build();
     }
 

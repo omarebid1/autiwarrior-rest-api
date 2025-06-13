@@ -32,6 +32,11 @@ public class Doctor {
     private Integer yearsOfExperience;
     private String certificates;
 
+    @Lob
+    @Column(name = "profile_picture", columnDefinition = "LONGBLOB")
+    private byte[] profilePicture;
+
+
     @JsonBackReference
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId", insertable = false, updatable = false)

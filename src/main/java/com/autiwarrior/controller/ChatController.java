@@ -1,7 +1,7 @@
 package com.autiwarrior.controller;
+
 import com.autiwarrior.dao.ChatMessageRepository_Socket;
 import com.autiwarrior.dto.ChatMessageModel;
-import com.autiwarrior.entities.ChatMessage;
 import com.autiwarrior.entities.ChatMessage_Socket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,14 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.Date;
-@CrossOrigin(origins = "*")  // يسمح بكل origins
+
+@CrossOrigin(origins = "*")
 
 @Controller
 @Slf4j
 public class ChatController {
 
-    @Autowired
-    ChatMessageRepository_Socket chatMessageRepository;
     @Autowired
     private ChatMessageRepository_Socket chatMessageRepository_Socket;
 

@@ -61,9 +61,11 @@ public class User implements UserDetails {
 
     @Column() // Nullable for local users
     private String providerId; // Unique ID from Google
+
     @JsonManagedReference
     @OneToOne(mappedBy = "user")
-private Doctor doctor;
+    private Doctor doctor;
+
     public enum Role {
         DOCTOR, MOTHER
     }

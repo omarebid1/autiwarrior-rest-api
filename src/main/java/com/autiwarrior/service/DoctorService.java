@@ -6,6 +6,7 @@ import com.autiwarrior.entities.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,6 +72,16 @@ public class DoctorService {
         existingDoctor.setAcademicDegree(doctorProfileDTO.getAcademicDegree());
         existingDoctor.setYearsOfExperience(doctorProfileDTO.getYearsOfExperience());
         existingDoctor.setCertificates(doctorProfileDTO.getCertificates());
+
+        // ✅ Handle profile picture
+        if (doctorProfileDTO.getProfilePicture() != null && !doctorProfileDTO.getProfilePicture().isEmpty()) {
+            try {
+                byte[] imageBytes = doctorProfileDTO.getProfilePicture().getBytes();
+                existingDoctor.setProfilePicture(imageBytes); // Make sure the Doctor entity has this field!
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read profile picture", e);
+            }
+        }
 
         // Save the updated doctor entity
         doctorRepository.save(existingDoctor);

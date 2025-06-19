@@ -8,6 +8,7 @@ import com.autiwarrior.entities.ChatMessage;
 import com.autiwarrior.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -70,29 +71,84 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<?> getAllMessagesForUser(@RequestParam String receiverEmail) {
-        Optional<User> userOpt = userRepo.findByEmail(receiverEmail);
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid email");
+    @GetMapping("/recent")
+    public ResponseEntity<?> getRecentChats(@RequestParam Long userId) {
+        Optional<User> currentUserOpt = userRepo.findById(userId);
+        if (currentUserOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid user ID");
         }
 
-        Long userId = Long.valueOf(userOpt.get().getUserId());
+        List<ChatMessage> recentMessages = messageRepo.findRecentChats(userId);
 
-        // Fetch all messages where the user is sender or receiver
-        List<ChatMessage> messages = messageRepo.findChatMessagesInvolvingUser(userId);
+        List<ChatHistoryDto> response = recentMessages.stream()
+                .map(msg -> {
+                    User partner = msg.getSender().getUserId().equals(userId)
+                            ? msg.getReceiver()
+                            : msg.getSender();
 
-        // Map to simplified DTO
-        List<ChatHistoryDto> response = messages.stream()
-                .map(msg -> new ChatHistoryDto(
-                        msg.getSender().getEmail(),
-                        msg.getContent(),
-                        msg.getTimestamp()))
+                    String fullName = partner.getFirstName() + " " + partner.getLastName();
+                    String pictureUrl = partner.getProfilePictureUrl();
+
+                    // Fetch unread message count from partner to current user
+                    long unreadCount = messageRepo.countUnreadMessages(Long.valueOf(partner.getUserId()), userId);
+
+                    return new ChatHistoryDto(
+                            partner.getUserId(),
+                            fullName,
+                            partner.getEmail(),
+                            pictureUrl,
+                            msg.getContent(),
+                            msg.getTimestamp(),
+                            unreadCount
+                    );
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
     }
 
+
+    @GetMapping("/history")
+    @Transactional
+    public ResponseEntity<?> getAllMessagesBetweenUsers(
+            @RequestParam String receiverEmail,
+            @RequestParam String partnerEmail) {
+
+        Optional<User> receiverOpt = userRepo.findByEmail(receiverEmail);
+        Optional<User> partnerOpt = userRepo.findByEmail(partnerEmail);
+
+        if (receiverOpt.isEmpty() || partnerOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid email(s)");
+        }
+
+        User receiver = receiverOpt.get();
+        User partner = partnerOpt.get();
+
+        Long receiverId = Long.valueOf(receiver.getUserId());
+        Long partnerId = Long.valueOf(partner.getUserId());
+
+        // ✅ Mark unread messages from partner → receiver as read
+        messageRepo.markMessagesAsRead(partnerId, receiverId);
+
+        // ✅ Now fetch full conversation
+        List<ChatMessage> messages = messageRepo.findMessagesBetweenUsers(receiverId, partnerId);
+
+        List<ChatHistoryDto> response = messages.stream()
+                .map(msg -> {
+                    User sender = msg.getSender();
+                    return new ChatHistoryDto(
+                            sender.getUserId(),
+                            sender.getFirstName() + " " + sender.getLastName(),
+                            sender.getEmail(),
+                            sender.getProfilePictureUrl(),
+                            msg.getContent(),
+                            msg.getTimestamp(),
+                            0 // optional: unread count not needed here
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 
 }

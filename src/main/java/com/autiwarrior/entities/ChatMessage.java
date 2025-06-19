@@ -21,6 +21,9 @@ public class ChatMessage {
     @JoinColumn(name = "receiver_id")
     private User receiver;
 
+    @Column(nullable = false)
+    private boolean isRead = false;
+
     private String content;
     private LocalDateTime timestamp;
 }

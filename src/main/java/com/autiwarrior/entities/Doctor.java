@@ -7,6 +7,8 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -30,12 +32,13 @@ public class Doctor {
     private String address;
     private String academicDegree;
     private Integer yearsOfExperience;
-    private String certificates;
 
     @Lob
     @Column(name = "profile_picture", columnDefinition = "LONGBLOB")
     private byte[] profilePicture;
 
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Certificate> certificates = new ArrayList<>();
 
     @JsonBackReference
     @OneToOne

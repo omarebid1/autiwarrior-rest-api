@@ -1,14 +1,19 @@
 package com.autiwarrior.controller;
 
+import com.autiwarrior.dto.CertificateDTO;
+import com.autiwarrior.dto.DoctorDTO;
 import com.autiwarrior.dto.DoctorProfileDTO;
-import com.autiwarrior.dto.DoctorProfileResponseDTO;
+import com.autiwarrior.dto.mapper.DoctorMapper;
+import com.autiwarrior.entities.Certificate;
 import com.autiwarrior.entities.Doctor;
 import com.autiwarrior.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -23,38 +28,64 @@ public class DoctorController {
     // ------------------ Create Operations ------------------
 
     /**
-     * Endpoint to create a new doctor.
+     * Creates a new doctor in the system.
+     *
+     * @param doctor The doctor object sent in the request body.
+     * @return The created doctor object with a generated ID.
      */
     @PostMapping
-    public ResponseEntity<Doctor> createDoctor(@RequestBody Doctor doctor) {
+    public ResponseEntity<DoctorDTO> createDoctor(@RequestBody Doctor doctor) {
         Doctor createdDoctor = doctorService.createDoctor(doctor);
-        return ResponseEntity.ok(createdDoctor);
+        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(createdDoctor.getDoctorId());
+        DoctorDTO dto = DoctorMapper.toDTO(createdDoctor, certificates);
+        return ResponseEntity.ok(dto);
     }
 
     // ------------------ Read Operations ------------------
 
     /**
-     * Endpoint to retrieve a doctor by ID.
+     * Retrieves a doctor by their unique ID.
+     *
+     * @param doctorId The ID of the doctor to retrieve.
+     * @return The doctor object if found, or 404 if not.
      */
     @GetMapping("/{doctorId}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable Integer doctorId) {
-        Optional<Doctor> doctor = doctorService.getDoctorById(doctorId);
-        return doctor.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Integer doctorId) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorById(doctorId);
+        if (doctorOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Doctor doctor = doctorOpt.get();
+        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctorId);
+        DoctorDTO dto = DoctorMapper.toDTO(doctor, certificates);
+        return ResponseEntity.ok(dto);
     }
 
     /**
-     * Endpoint to retrieve all doctors.
+     * Retrieves a list of all doctors.
+     *
+     * @return A list of all registered doctors.
      */
     @GetMapping
-    public ResponseEntity<List<Doctor>> getAllDoctors() {
+    public ResponseEntity<List<DoctorDTO>> getAllDoctors() {
         List<Doctor> doctors = doctorService.getAllDoctors();
-        return ResponseEntity.ok(doctors);
+        List<DoctorDTO> doctorDTOs = doctors.stream().map(doctor -> {
+            List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctor.getDoctorId());
+            return DoctorMapper.toDTO(doctor, certificates);
+        }).toList();
+
+        return ResponseEntity.ok(doctorDTOs);
     }
 
     // ------------------ Update Operations ------------------
 
     /**
-     * Endpoint to update a doctor by ID.
+     * Updates an existing doctor's information by ID.
+     *
+     * @param doctorId The ID of the doctor to update.
+     * @param doctor   The updated doctor information.
+     * @return The updated doctor object, or 404 if not found.
      */
     @PutMapping("/{doctorId}")
     public ResponseEntity<Doctor> updateDoctor(@PathVariable Integer doctorId, @RequestBody Doctor doctor) {
@@ -66,7 +97,10 @@ public class DoctorController {
     // ------------------ Delete Operations ------------------
 
     /**
-     * Endpoint to delete a doctor by ID.
+     * Deletes a doctor by their ID.
+     *
+     * @param doctorId The ID of the doctor to delete.
+     * @return 204 No Content if deletion is successful.
      */
     @DeleteMapping("/{doctorId}")
     public ResponseEntity<Void> deleteDoctor(@PathVariable Integer doctorId) {
@@ -77,52 +111,76 @@ public class DoctorController {
     // ------------------ Doctor Profile Data ------------------
 
     /**
-     * Endpoint to retrieve doctor profile data by doctor ID.
+     * Retrieves a detailed doctor profile by doctor ID, including personal details,
+     * profile picture (as Base64), and uploaded certificates (as Base64).
+     *
+     * @param id The ID of the doctor.
+     * @return The full profile data of the doctor.
      */
     @GetMapping("/profile")
-    public ResponseEntity<DoctorProfileResponseDTO> getDoctorProfile(@RequestParam Integer id) {
+    public ResponseEntity<DoctorDTO> getDoctorProfile(@RequestParam Integer id) {
         Optional<Doctor> doctorOpt = doctorService.getDoctorById(id);
         if (doctorOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Doctor doctor = doctorOpt.get();
-
-        DoctorProfileResponseDTO dto = new DoctorProfileResponseDTO();
-        dto.setDoctorId(doctor.getDoctorId());
-        dto.setFirstName(doctor.getFirstName());
-        dto.setLastName(doctor.getLastName());
-        dto.setEmail(doctor.getEmail());
-        dto.setPhoneNumber(doctor.getPhoneNumber());
-        dto.setSpecialization(doctor.getSpecialization());
-        dto.setDoctorLicense(doctor.getDoctorLicense());
-        dto.setDateOfBirth(doctor.getDateOfBirth());
-        dto.setAddress(doctor.getAddress());
-        dto.setAcademicDegree(doctor.getAcademicDegree());
-        dto.setYearsOfExperience(doctor.getYearsOfExperience());
-        dto.setCertificates(doctor.getCertificates());
-
-        // Convert image to Base64
-        if (doctor.getProfilePicture() != null) {
-            String base64Image = Base64.getEncoder().encodeToString(doctor.getProfilePicture());
-            dto.setProfilePictureBase64(base64Image);
-        }
+        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(id);
+        DoctorDTO dto = DoctorMapper.toDTO(doctor, certificates);
 
         return ResponseEntity.ok(dto);
     }
 
     /**
-     * Endpoint to complete doctor profile data using doctor license and optional profile picture.
+     * Completes a doctor's profile by updating additional fields such as license and profile picture.
+     * Expects multipart/form-data including optional profile image.
+     *
+     * @param doctorProfileDTO DTO containing profile completion fields.
+     * @return Success message after saving the data.
      */
-    @PostMapping(value = "/complete-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> completeDoctorData(@ModelAttribute DoctorProfileDTO doctorProfileDTO) {
-        if (doctorProfileDTO.getDoctorLicense() == null) {
-            throw new IllegalArgumentException("Doctor License is required to update profile data.");
-        }
+    @PostMapping(value = "/{doctorId}/complete-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> completeDoctorData(
+            @PathVariable Integer doctorId,
+            @ModelAttribute DoctorProfileDTO doctorProfileDTO) throws IOException {
 
-        doctorService.saveDoctorDataByLicense(doctorProfileDTO);
+        doctorService.saveDoctorDataById(doctorId, doctorProfileDTO);
         return ResponseEntity.ok("Doctor profile updated successfully");
     }
 
+    /**
+     * Uploads one or more certificates for a doctor. Files are stored in the database as binary data (BLOB).
+     *
+     * @param doctorId The ID of the doctor.
+     * @param files    The list of files to upload.
+     * @return Success message after saving the certificates.
+     */
+    @PostMapping(value = "/{doctorId}/certificates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadCertificates(
+            @PathVariable Integer doctorId,
+            @RequestParam("files") List<MultipartFile> files) {
+        doctorService.uploadCertificates(doctorId, files);
+        return ResponseEntity.ok("Certificates uploaded successfully.");
+    }
 
+    /**
+     * Retrieves all certificates for a given doctor. The files are returned as Base64 strings
+     * along with their metadata to allow direct preview in the frontend.
+     *
+     * @param doctorId The ID of the doctor.
+     * @return A list of certificate DTOs containing name, file type, and Base64 data.
+     */
+    @GetMapping("/{doctorId}/certificates")
+    public ResponseEntity<List<CertificateDTO>> getCertificates(@PathVariable Integer doctorId) {
+        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctorId);
+
+        List<CertificateDTO> response = certificates.stream().map(cert -> {
+            CertificateDTO dto = new CertificateDTO();
+            dto.setName(cert.getName());
+            dto.setFileType(cert.getFileType());
+            dto.setBase64Data(Base64.getEncoder().encodeToString(cert.getFileData()));
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
 }

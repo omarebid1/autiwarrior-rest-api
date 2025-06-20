@@ -1,10 +1,13 @@
 package com.autiwarrior.service;
 
+import com.autiwarrior.dao.CertificateRepository;
 import com.autiwarrior.dao.DoctorRepository;
 import com.autiwarrior.dto.DoctorProfileDTO;
+import com.autiwarrior.entities.Certificate;
 import com.autiwarrior.entities.Doctor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,6 +18,9 @@ public class DoctorService {
 
     @Autowired
     private DoctorRepository doctorRepository;
+
+    @Autowired
+    private CertificateRepository certificateRepo;
 
     // ------------------ Create Operations ------------------
 
@@ -52,39 +58,45 @@ public class DoctorService {
     }
 
 
-    /**
-     * Update profile data using doctor license instead of ID.
-     */
-    public void saveDoctorDataByLicense(DoctorProfileDTO doctorProfileDTO) {
-        if (doctorProfileDTO.getDoctorLicense() == null) {
-            throw new IllegalArgumentException("Doctor License is required to update profile data.");
-        }
+    public void uploadCertificates(Integer doctorId, List<MultipartFile> files) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        // Find the existing doctor by license
-        Doctor existingDoctor = doctorRepository.findByDoctorLicense(doctorProfileDTO.getDoctorLicense())
-                .orElseThrow(() -> new RuntimeException("Doctor with license " + doctorProfileDTO.getDoctorLicense() + " not found"));
-
-        // Map data from the DTO to the Doctor entity
-        existingDoctor.setPhoneNumber(doctorProfileDTO.getPhoneNumber());
-        existingDoctor.setSpecialization(doctorProfileDTO.getSpecialization());
-        existingDoctor.setDateOfBirth(doctorProfileDTO.getDateOfBirth());
-        existingDoctor.setAddress(doctorProfileDTO.getAddress());
-        existingDoctor.setAcademicDegree(doctorProfileDTO.getAcademicDegree());
-        existingDoctor.setYearsOfExperience(doctorProfileDTO.getYearsOfExperience());
-        existingDoctor.setCertificates(doctorProfileDTO.getCertificates());
-
-        // ✅ Handle profile picture
-        if (doctorProfileDTO.getProfilePicture() != null && !doctorProfileDTO.getProfilePicture().isEmpty()) {
+        for (MultipartFile file : files) {
             try {
-                byte[] imageBytes = doctorProfileDTO.getProfilePicture().getBytes();
-                existingDoctor.setProfilePicture(imageBytes); // Make sure the Doctor entity has this field!
+                Certificate cert = new Certificate();
+                cert.setDoctor(doctor);
+                cert.setName(file.getOriginalFilename());
+                cert.setFileType(file.getContentType());
+                cert.setFileData(file.getBytes()); // 🔁 store in DB
+
+                certificateRepo.save(cert);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to read profile picture", e);
+                throw new RuntimeException("Error saving certificate", e);
             }
         }
+    }
 
-        // Save the updated doctor entity
-        doctorRepository.save(existingDoctor);
+    public List<Certificate> getCertificatesByDoctorId(Integer doctorId) {
+        return certificateRepo.findByDoctorDoctorId(doctorId);
+    }
+
+    public void saveDoctorDataById(Integer doctorId, DoctorProfileDTO dto) throws IOException {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        doctor.setDoctorLicense(dto.getDoctorLicense());
+        doctor.setAcademicDegree(dto.getAcademicDegree());
+        doctor.setAddress(dto.getAddress());
+        doctor.setYearsOfExperience(dto.getYearsOfExperience());
+        doctor.setSpecialization(dto.getSpecialization());
+        doctor.setDateOfBirth(dto.getDateOfBirth());
+
+        if (dto.getProfilePicture() != null) {
+            doctor.setProfilePicture(dto.getProfilePicture().getBytes());
+        }
+
+        doctorRepository.save(doctor);
     }
 
 

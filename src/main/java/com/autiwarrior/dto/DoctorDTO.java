@@ -3,9 +3,11 @@ package com.autiwarrior.dto;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
-public class DoctorProfileResponseDTO {
+public class DoctorDTO {
+
     private Integer doctorId;
     private String firstName;
     private String lastName;
@@ -17,6 +19,8 @@ public class DoctorProfileResponseDTO {
     private String address;
     private String academicDegree;
     private Integer yearsOfExperience;
-    private String certificates;
-    private String profilePictureBase64; // base64 encoded string
+
+    private String profilePictureBase64;
+
+    private List<CertificateDTO> certificates;
 }

@@ -1,9 +1,11 @@
 package com.autiwarrior.dto;
 
+import com.autiwarrior.entities.Certificate;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class DoctorProfileDTO {
@@ -14,7 +16,7 @@ public class DoctorProfileDTO {
     private String address;
     private String academicDegree;
     private Integer yearsOfExperience;
-    private String certificates;
+    private List<Certificate> certificates;
 
     private MultipartFile profilePicture;
 }

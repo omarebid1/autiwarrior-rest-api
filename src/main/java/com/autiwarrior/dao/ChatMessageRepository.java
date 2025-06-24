@@ -44,6 +44,18 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             ") ORDER BY m.timestamp DESC")
     List<ChatMessage> findRecentChats(@Param("userId") Long userId);
 
+    @Query("SELECT m FROM ChatMessage m WHERE m.timestamp IN (" +
+            "SELECT MAX(m2.timestamp) FROM ChatMessage m2 " +
+            "WHERE m2.sender.email = :email OR m2.receiver.email = :email " +
+            "GROUP BY CASE WHEN m2.sender.email = :email THEN m2.receiver.email ELSE m2.sender.email END" +
+            ") ORDER BY m.timestamp DESC")
+    List<ChatMessage> findRecentChatsByEmail(@Param("email") String email);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m " +
+            "WHERE m.sender.email = :partnerEmail AND m.receiver.email = :currentUserEmail AND m.isRead = false")
+    long countUnreadMessagesByEmail(@Param("partnerEmail") String partnerEmail,
+                                   @Param("currentUserEmail") String currentUserEmail);
+
     @Query("SELECT COUNT(m) FROM ChatMessage m " +
             "WHERE m.sender.id = :partnerId AND m.receiver.id = :currentUserId AND m.isRead = false")
     long countUnreadMessages(@Param("partnerId") Long partnerId,

@@ -72,17 +72,17 @@ public class MessageController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<?> getRecentChats(@RequestParam Long userId) {
-        Optional<User> currentUserOpt = userRepo.findById(userId);
+    public ResponseEntity<?> getRecentChats(@RequestParam String email) {
+        Optional<User> currentUserOpt = userRepo.findByEmail(email);
         if (currentUserOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid user ID");
+            return ResponseEntity.badRequest().body("Invalid email");
         }
 
-        List<ChatMessage> recentMessages = messageRepo.findRecentChats(userId);
+        List<ChatMessage> recentMessages = messageRepo.findRecentChatsByEmail(email);
 
         List<ChatHistoryDto> response = recentMessages.stream()
                 .map(msg -> {
-                    User partner = msg.getSender().getUserId().equals(userId)
+                    User partner = msg.getSender().getEmail().equals(email)
                             ? msg.getReceiver()
                             : msg.getSender();
 
@@ -90,7 +90,7 @@ public class MessageController {
                     String pictureUrl = partner.getProfilePictureUrl();
 
                     // Fetch unread message count from partner to current user
-                    long unreadCount = messageRepo.countUnreadMessages(Long.valueOf(partner.getUserId()), userId);
+                    long unreadCount = messageRepo.countUnreadMessagesByEmail(partner.getEmail(), email);
 
                     return new ChatHistoryDto(
                             partner.getUserId(),

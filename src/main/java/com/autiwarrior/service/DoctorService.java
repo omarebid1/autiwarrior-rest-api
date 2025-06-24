@@ -22,44 +22,37 @@ public class DoctorService {
     @Autowired
     private CertificateRepository certificateRepo;
 
-    // ------------------ Create Operations ------------------
+    // ------------------ Create ------------------
 
-    /**
-     * Create and save a new doctor.
-     */
     public Doctor createDoctor(Doctor doctor) {
         return doctorRepository.save(doctor);
     }
 
-    // ------------------ Read Operations ------------------
+    // ------------------ Read ------------------
 
-    /**
-     * Retrieve a doctor by ID.
-     */
     public Optional<Doctor> getDoctorById(Integer doctorId) {
         return doctorRepository.findById(doctorId);
     }
 
-    /**
-     * Get a list of all doctors.
-     */
+    public Optional<Doctor> getDoctorByEmail(String email) {
+        return doctorRepository.findByEmail(email);
+    }
+
     public List<Doctor> getAllDoctors() {
         return doctorRepository.findAll();
     }
 
-    // ------------------ Update Operations ------------------
+    // ------------------ Update ------------------
 
-    /**
-     * Update a doctor if they exist by ID.
-     */
     public Doctor updateDoctor(Doctor doctor) {
         Optional<Doctor> existing = getDoctorById(doctor.getDoctorId());
         return existing.map(value -> doctorRepository.save(doctor)).orElse(null);
     }
 
+    // ------------------ Profile & Certificates ------------------
 
-    public void uploadCertificates(Integer doctorId, List<MultipartFile> files) {
-        Doctor doctor = doctorRepository.findById(doctorId)
+    public void uploadCertificates(String email, List<MultipartFile> files) {
+        Doctor doctor = doctorRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
         for (MultipartFile file : files) {
@@ -68,7 +61,7 @@ public class DoctorService {
                 cert.setDoctor(doctor);
                 cert.setName(file.getOriginalFilename());
                 cert.setFileType(file.getContentType());
-                cert.setFileData(file.getBytes()); // 🔁 store in DB
+                cert.setFileData(file.getBytes());
 
                 certificateRepo.save(cert);
             } catch (IOException e) {
@@ -77,12 +70,14 @@ public class DoctorService {
         }
     }
 
-    public List<Certificate> getCertificatesByDoctorId(Integer doctorId) {
-        return certificateRepo.findByDoctorDoctorId(doctorId);
+    public List<Certificate> getCertificatesByEmail(String email) {
+        Doctor doctor = doctorRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        return certificateRepo.findByDoctorDoctorId(doctor.getDoctorId());
     }
 
-    public void saveDoctorDataById(Integer doctorId, DoctorProfileDTO dto) throws IOException {
-        Doctor doctor = doctorRepository.findById(doctorId)
+    public void saveDoctorDataByEmail(String email, DoctorProfileDTO dto) throws IOException {
+        Doctor doctor = doctorRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
         doctor.setDoctorLicense(dto.getDoctorLicense());
@@ -99,14 +94,11 @@ public class DoctorService {
         doctorRepository.save(doctor);
     }
 
+    // ------------------ Delete ------------------
 
-    // ------------------ Delete Operations ------------------
-
-    /**
-     * Delete a doctor by ID.
-     */
-    public void deleteDoctor(Integer doctorId) {
-        doctorRepository.deleteById(doctorId);
+    public void deleteDoctor(String email) {
+        Doctor doctor = doctorRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+        doctorRepository.deleteById(doctor.getDoctorId());
     }
 }
-

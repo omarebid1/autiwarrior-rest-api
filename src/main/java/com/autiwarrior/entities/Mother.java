@@ -20,6 +20,10 @@ public class Mother {
     private LocalDate dateOfBirth;
     private String address;
 
+    @Lob
+    @Column(name = "profile_picture", columnDefinition = "LONGBLOB")
+    private byte[] profilePicture;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;

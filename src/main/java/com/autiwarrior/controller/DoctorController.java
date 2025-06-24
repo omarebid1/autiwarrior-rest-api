@@ -25,153 +25,101 @@ public class DoctorController {
     @Autowired
     private DoctorService doctorService;
 
-    // ------------------ Create Operations ------------------
+    // ------------------ Create ------------------
 
-    /**
-     * Creates a new doctor in the system.
-     *
-     * @param doctor The doctor object sent in the request body.
-     * @return The created doctor object with a generated ID.
-     */
     @PostMapping
     public ResponseEntity<DoctorDTO> createDoctor(@RequestBody Doctor doctor) {
         Doctor createdDoctor = doctorService.createDoctor(doctor);
-        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(createdDoctor.getDoctorId());
+        List<Certificate> certificates = doctorService.getCertificatesByEmail(createdDoctor.getEmail());
         DoctorDTO dto = DoctorMapper.toDTO(createdDoctor, certificates);
         return ResponseEntity.ok(dto);
     }
 
-    // ------------------ Read Operations ------------------
+    // ------------------ Read ------------------
 
-    /**
-     * Retrieves a doctor by their unique ID.
-     *
-     * @param doctorId The ID of the doctor to retrieve.
-     * @return The doctor object if found, or 404 if not.
-     */
-    @GetMapping("/{doctorId}")
-    public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Integer doctorId) {
-        Optional<Doctor> doctorOpt = doctorService.getDoctorById(doctorId);
+    @GetMapping("/find")
+    public ResponseEntity<DoctorDTO> getDoctorByEmail(@RequestParam String email) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorByEmail(email);
         if (doctorOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Doctor doctor = doctorOpt.get();
-        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctorId);
+        List<Certificate> certificates = doctorService.getCertificatesByEmail(email);
         DoctorDTO dto = DoctorMapper.toDTO(doctor, certificates);
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Retrieves a list of all doctors.
-     *
-     * @return A list of all registered doctors.
-     */
     @GetMapping
     public ResponseEntity<List<DoctorDTO>> getAllDoctors() {
         List<Doctor> doctors = doctorService.getAllDoctors();
         List<DoctorDTO> doctorDTOs = doctors.stream().map(doctor -> {
-            List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctor.getDoctorId());
+            List<Certificate> certificates = doctorService.getCertificatesByEmail(doctor.getEmail());
             return DoctorMapper.toDTO(doctor, certificates);
         }).toList();
 
         return ResponseEntity.ok(doctorDTOs);
     }
 
-    // ------------------ Update Operations ------------------
+    // ------------------ Update ------------------
 
-    /**
-     * Updates an existing doctor's information by ID.
-     *
-     * @param doctorId The ID of the doctor to update.
-     * @param doctor   The updated doctor information.
-     * @return The updated doctor object, or 404 if not found.
-     */
-    @PutMapping("/{doctorId}")
-    public ResponseEntity<Doctor> updateDoctor(@PathVariable Integer doctorId, @RequestBody Doctor doctor) {
-        doctor.setDoctorId(doctorId);
+    @PutMapping("update")
+    public ResponseEntity<Doctor> updateDoctor(@RequestParam String email, @RequestBody Doctor doctor) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorByEmail(email);
+        if (doctorOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        doctor.setDoctorId(doctorOpt.get().getDoctorId());
         Doctor updatedDoctor = doctorService.updateDoctor(doctor);
-        return updatedDoctor != null ? ResponseEntity.ok(updatedDoctor) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(updatedDoctor);
     }
 
-    // ------------------ Delete Operations ------------------
+    // ------------------ Delete ------------------
 
-    /**
-     * Deletes a doctor by their ID.
-     *
-     * @param doctorId The ID of the doctor to delete.
-     * @return 204 No Content if deletion is successful.
-     */
-    @DeleteMapping("/{doctorId}")
-    public ResponseEntity<Void> deleteDoctor(@PathVariable Integer doctorId) {
-        doctorService.deleteDoctor(doctorId);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteDoctor(@RequestParam String email) {
+        doctorService.deleteDoctor(email);
         return ResponseEntity.noContent().build();
     }
 
-    // ------------------ Doctor Profile Data ------------------
+    // ------------------ Profile ------------------
 
-    /**
-     * Retrieves a detailed doctor profile by doctor ID, including personal details,
-     * profile picture (as Base64), and uploaded certificates (as Base64).
-     *
-     * @param id The ID of the doctor.
-     * @return The full profile data of the doctor.
-     */
     @GetMapping("/profile")
-    public ResponseEntity<DoctorDTO> getDoctorProfile(@RequestParam Integer id) {
-        Optional<Doctor> doctorOpt = doctorService.getDoctorById(id);
+    public ResponseEntity<DoctorDTO> getDoctorProfile(@RequestParam String email) {
+        Optional<Doctor> doctorOpt = doctorService.getDoctorByEmail(email);
         if (doctorOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Doctor doctor = doctorOpt.get();
-        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(id);
+        List<Certificate> certificates = doctorService.getCertificatesByEmail(email);
         DoctorDTO dto = DoctorMapper.toDTO(doctor, certificates);
-
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Completes a doctor's profile by updating additional fields such as license and profile picture.
-     * Expects multipart/form-data including optional profile image.
-     *
-     * @param doctorProfileDTO DTO containing profile completion fields.
-     * @return Success message after saving the data.
-     */
-    @PostMapping(value = "/{doctorId}/complete-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/complete-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> completeDoctorData(
-            @PathVariable Integer doctorId,
+            @RequestParam String email,
             @ModelAttribute DoctorProfileDTO doctorProfileDTO) throws IOException {
 
-        doctorService.saveDoctorDataById(doctorId, doctorProfileDTO);
+        doctorService.saveDoctorDataByEmail(email, doctorProfileDTO);
         return ResponseEntity.ok("Doctor profile updated successfully");
     }
 
-    /**
-     * Uploads one or more certificates for a doctor. Files are stored in the database as binary data (BLOB).
-     *
-     * @param doctorId The ID of the doctor.
-     * @param files    The list of files to upload.
-     * @return Success message after saving the certificates.
-     */
-    @PostMapping(value = "/{doctorId}/certificates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // ------------------ Certificates ------------------
+
+    @PostMapping(value = "/certificates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadCertificates(
-            @PathVariable Integer doctorId,
+            @RequestParam String email,
             @RequestParam("files") List<MultipartFile> files) {
-        doctorService.uploadCertificates(doctorId, files);
+
+        doctorService.uploadCertificates(email, files);
         return ResponseEntity.ok("Certificates uploaded successfully.");
     }
 
-    /**
-     * Retrieves all certificates for a given doctor. The files are returned as Base64 strings
-     * along with their metadata to allow direct preview in the frontend.
-     *
-     * @param doctorId The ID of the doctor.
-     * @return A list of certificate DTOs containing name, file type, and Base64 data.
-     */
-    @GetMapping("/{doctorId}/certificates")
-    public ResponseEntity<List<CertificateDTO>> getCertificates(@PathVariable Integer doctorId) {
-        List<Certificate> certificates = doctorService.getCertificatesByDoctorId(doctorId);
+    @GetMapping("/certificates")
+    public ResponseEntity<List<CertificateDTO>> getCertificates(@RequestParam String email) {
+        List<Certificate> certificates = doctorService.getCertificatesByEmail(email);
 
         List<CertificateDTO> response = certificates.stream().map(cert -> {
             CertificateDTO dto = new CertificateDTO();

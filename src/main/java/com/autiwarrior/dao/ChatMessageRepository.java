@@ -11,8 +11,8 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     @Query("SELECT m FROM ChatMessage m WHERE " +
-            "(m.sender.id = :user1 AND m.receiver.id = :user2) OR " +
-            "(m.sender.id = :user2 AND m.receiver.id = :user1) " +
+            "(m.sender.userId = :user1 AND m.receiver.userId = :user2) OR " +
+            "(m.sender.userId = :user2 AND m.receiver.userId = :user1) " +
             "ORDER BY m.timestamp ASC")
     List<ChatMessage> findChatHistory(@Param("user1") Integer user1, @Param("user2") Integer user2);
 
@@ -35,14 +35,14 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
                 AND m.timestamp = sub.latest
             )
             """, nativeQuery = true)
-    List<ChatMessage> findChatMessagesInvolvingUser(@Param("userId") Long userId);
+    List<ChatMessage> findChatMessagesInvolvingUser(@Param("userId") Integer userId);
 
     @Query("SELECT m FROM ChatMessage m WHERE m.timestamp IN (" +
             "SELECT MAX(m2.timestamp) FROM ChatMessage m2 " +
-            "WHERE m2.sender.id = :userId OR m2.receiver.id = :userId " +
-            "GROUP BY CASE WHEN m2.sender.id = :userId THEN m2.receiver.id ELSE m2.sender.id END" +
+            "WHERE m2.sender.userId = :userId OR m2.receiver.userId = :userId " +
+            "GROUP BY CASE WHEN m2.sender.userId = :userId THEN m2.receiver.userId ELSE m2.sender.userId END" +
             ") ORDER BY m.timestamp DESC")
-    List<ChatMessage> findRecentChats(@Param("userId") Long userId);
+    List<ChatMessage> findRecentChats(@Param("userId") Integer userId);
 
     @Query("SELECT m FROM ChatMessage m WHERE m.timestamp IN (" +
             "SELECT MAX(m2.timestamp) FROM ChatMessage m2 " +
@@ -57,20 +57,20 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
                                    @Param("currentUserEmail") String currentUserEmail);
 
     @Query("SELECT COUNT(m) FROM ChatMessage m " +
-            "WHERE m.sender.id = :partnerId AND m.receiver.id = :currentUserId AND m.isRead = false")
-    long countUnreadMessages(@Param("partnerId") Long partnerId,
-                             @Param("currentUserId") Long currentUserId);
+            "WHERE m.sender.userId = :partnerId AND m.receiver.userId = :currentUserId AND m.isRead = false")
+    long countUnreadMessages(@Param("partnerId") Integer partnerId,
+                             @Param("currentUserId") Integer currentUserId);
 
     @Transactional
     @Modifying
     @Query("UPDATE ChatMessage m SET m.isRead = true " +
-            "WHERE m.sender.id = :senderId AND m.receiver.id = :receiverId AND m.isRead = false")
-    void markMessagesAsRead(@Param("senderId") Long senderId, @Param("receiverId") Long receiverId);
+            "WHERE m.sender.userId = :senderId AND m.receiver.userId = :receiverId AND m.isRead = false")
+    void markMessagesAsRead(@Param("senderId") Integer senderId, @Param("receiverId") Integer receiverId);
 
     @Query("SELECT m FROM ChatMessage m " +
-            "WHERE (m.sender.id = :user1 AND m.receiver.id = :user2) " +
-            "   OR (m.sender.id = :user2 AND m.receiver.id = :user1) " +
+            "WHERE (m.sender.userId = :user1 AND m.receiver.userId = :user2) " +
+            "   OR (m.sender.userId = :user2 AND m.receiver.userId = :user1) " +
             "ORDER BY m.timestamp ASC")
-    List<ChatMessage> findMessagesBetweenUsers(@Param("user1") Long user1Id,
-                                               @Param("user2") Long user2Id);
+    List<ChatMessage> findMessagesBetweenUsers(@Param("user1") Integer user1Id,
+                                               @Param("user2") Integer user2Id);
 }

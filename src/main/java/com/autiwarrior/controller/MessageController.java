@@ -128,10 +128,10 @@ public class MessageController {
         Long partnerId = Long.valueOf(partner.getUserId());
 
         // ✅ Mark unread messages from partner → receiver as read
-        messageRepo.markMessagesAsRead(partnerId, receiverId);
+        messageRepo.markMessagesAsRead(Math.toIntExact(partnerId), Math.toIntExact(receiverId));
 
         // ✅ Now fetch full conversation
-        List<ChatMessage> messages = messageRepo.findMessagesBetweenUsers(receiverId, partnerId);
+        List<ChatMessage> messages = messageRepo.findMessagesBetweenUsers(Math.toIntExact(receiverId), Math.toIntExact(partnerId));
 
         List<ChatHistoryDto> response = messages.stream()
                 .map(msg -> {

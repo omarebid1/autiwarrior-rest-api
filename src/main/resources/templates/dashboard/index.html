@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="header">
+    <h1>👩‍⚕️ AutiWarrior Admin Dashboard</h1>
+  </div>
+
+  <div class="container">
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="🔍 Search by email..." />
+      <button id="search-button">Search</button>
+    </div>
+    
+
+    <!-- 📊 System Status -->
+    <section class="status">
+      <h3 style="color: #0087fd;">System Status</h3>
+      <ul id="status-list">
+        <li>Total Users: <span id="total-users"></span></li>
+        <li>Total Mothers: <span id="total-mothers"></span></li>
+        <li>Total Doctors: <span id="total-doctors"></span></li>
+        <li>Server Time: <span id="server-time"></span></li>
+      </ul>
+    </section>
+
+    <!-- 👩‍👧 Mothers Table -->
+    <section class="users">
+      <h2>Mothers</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone</th>
+            <th>Birth Date</th>
+            <th>Address</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="mothers-table-body">
+          <!-- Filled by script.js -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 👨‍⚕️ Doctors Table -->
+    <section class="users">
+      <h2>Doctors</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone</th>
+            <th>Specialization</th>
+            <th>License</th>
+            <th>Birth Date</th>
+            <th>Address</th>
+            <th>Degree</th>
+            <th>Experience</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="doctors-table-body">
+          <!-- Filled by script.js -->
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

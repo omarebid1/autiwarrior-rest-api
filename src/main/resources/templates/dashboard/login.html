@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Page</title>
+  <link rel="stylesheet" href="./login.css"/>
+</head>
+<body>
+    
+      <div class="container">
+  <div class="right-panel">
+    <div class="form-logo">
+      <img src="./logo.jpg" alt="logo">
+    </div>
+
+    <h2 class="login-title">Login as Admin</h2>
+    <form id="loginForm">
+      <input type="email" placeholder="email" required />
+      <input type="password" placeholder="Password" required />
+      <div class="options">
+        <label><input type="checkbox" /> Remember me</label>
+      </div>
+      <button type="submit">LOGIN</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById("loginForm").addEventListener("submit", function(event) {
+    event.preventDefault(); 
+    window.location.href = "index.html";
+  });
+</script>
+
+
+</body>
+</html>
